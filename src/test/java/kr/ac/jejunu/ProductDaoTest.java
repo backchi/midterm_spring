@@ -1,6 +1,5 @@
 package kr.ac.jejunu;
 
-import com.sun.scenario.effect.impl.prism.PrDrawable;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -10,11 +9,9 @@ import static org.junit.Assert.assertEquals;
 
 public class ProductDaoTest {
     ProductDao productDao;
-    ProductDao hallaProductDao;
     @Before
     public void setup() {
-        productDao = new JejuProductDao();
-        hallaProductDao = new HallaProductDao();
+        productDao = new ProductDao();
     }
 
     @Test
