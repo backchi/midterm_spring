@@ -2,7 +2,10 @@ package kr.ac.jejunu;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import javax.sql.DataSource;
 import java.sql.SQLException;
 
 import static org.junit.Assert.assertEquals;
@@ -13,8 +16,8 @@ public class ProductDaoTest {
 
     @Before
     public void setup() {
-        daoFactory = new DaoFactory();
-        productDao = daoFactory.getProductDao();
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(DaoFactory.class);
+        productDao = applicationContext.getBean(ProductDao.class);
     }
 
     @Test
