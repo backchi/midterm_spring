@@ -9,9 +9,12 @@ import static org.junit.Assert.assertEquals;
 
 public class ProductDaoTest {
     ProductDao productDao;
+    private DaoFactory daoFactory;
+
     @Before
     public void setup() {
-        productDao = new ProductDao();
+        daoFactory = new DaoFactory();
+        productDao = daoFactory.getProductDao();
     }
 
     @Test
