@@ -1,61 +1,50 @@
 package kr.ac.jejunu;
 
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
-
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class ProductDao {
-    private final JdbcTemplate jdbcTemplate;
+    public Product get(Long id) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.jdbc.Driver");
+        Connection connection = DriverManager.getConnection("jdbc:mysql://localhost/jeju?characterEncoding=utf-8", "jeju", "jejupw");
 
-    public ProductDao(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+        PreparedStatement preparedStatement = connection.prepareStatement("select * from product where id = ?");
+        preparedStatement.setLong(1, id);
+
+        ResultSet resultSet = preparedStatement.executeQuery();
+        resultSet.next();
+
+        Product product = new Product();
+        product.setId(resultSet.getLong("id"));
+        product.setTitle(resultSet.getString("title"));
+        product.setPrice(resultSet.getInt("price"));
+
+        //자원을 해지한다.
+        resultSet.close();
+        preparedStatement.close();
+        connection.close();
+
+        return product;
     }
 
-    public Product get(Long id) throws SQLException {
-        String sql = "select * from product where id = ?";
-        Object[] params = new Object[] {id};
-        try {
-            return jdbcTemplate.queryForObject(sql, params, (rs, rowNum) -> {
-                Product product = new Product();
-                product.setId(rs.getLong("id"));
-                product.setTitle(rs.getString("title"));
-                product.setPrice(rs.getInt("price"));
-                return product;
-            });
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
-    }
+    public Long insert(Product product) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.jdbc.Driver");
+        Connection connection = DriverManager.getConnection("jdbc:mysql://localhost/jeju?characterEncoding=utf-8", "jeju", "jejupw");
 
-    public Long insert(Product product) throws SQLException {
-        String sql = "insert into product(title, price) values (?,?)";
-        Object[] params = new Object[] {product.getTitle(), product.getPrice()};
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        int update = jdbcTemplate.update(con -> {
-            PreparedStatement preparedStatement = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            for (int i=0; i<params.length; i++) {
-                preparedStatement.setObject(i+1,params[i]);
-            }
-            return preparedStatement;
-        }, keyHolder);
-        return keyHolder.getKey().longValue();
-    }
+        PreparedStatement preparedStatement = connection.prepareStatement("insert into product(title, price) values (?,?)", Statement.RETURN_GENERATED_KEYS);
+        preparedStatement.setString(1, product.getTitle());
+        preparedStatement.setInt(2, product.getPrice());
 
-    public void update(Product product) throws SQLException {
-        String sql = "update product set title = ?, price = ? where id = ?";
-        Object[] params = new Object[] {product.getTitle(), product.getPrice(), product.getId()};
-        jdbcTemplate.update(sql, params);
-    }
+        preparedStatement.executeUpdate();
+        ResultSet resultSet = preparedStatement.getGeneratedKeys();
+        resultSet.next();
 
-    public void delete(Long id) throws SQLException {
-        String sql = "delete from product where id = ?";
-        Object[] params = new Object[] {id};
-        jdbcTemplate.update(sql, params);
-    }
+        Long id = resultSet.getLong(1);
+        
+        //자원을 해지한다.
+        resultSet.close();
+        preparedStatement.close();
+        connection.close();
 
+        return id;
+    }
 }
